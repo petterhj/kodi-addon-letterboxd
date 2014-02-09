@@ -23,9 +23,10 @@ def diary():
     # Get user watchlist items
     for film in letterboxd.get_user_diary():
         items.append({
-            'icon':'http://skyfall.cf.letterboxd.com/resized/film-poster/4/1/8/5/3/41853-torsk-pa-tallinn-0-35-0-50-crop.jpg?k=9a1db22f09',
-            'label': '%s (%s) | %s' % (film['title'], film['year'], film['rating']), 
-            'path': plugin.url_for('index')
+            'icon':film['poster'],
+            'thumbnail':film['poster'],
+            'label':'%s (%s) | %s' % (film['title'], film['year'], film['rating']),
+            'path':plugin.url_for('index')
         })
     
     # Return
@@ -40,9 +41,10 @@ def watchlist():
     # Get user watchlist items
     for film in letterboxd.get_user_watchlist():
         items.append({
-            'thumbnail':'http://skyfall.cf.letterboxd.com/resized/film-poster/4/1/8/5/3/41853-torsk-pa-tallinn-0-35-0-50-crop.jpg?k=9a1db22f09',
-            'label': '%s (%s)' % (film['title'], film['year']), 
-            'path': plugin.url_for('index')
+            'icon':film['poster'],
+            'thumbnail':film['poster'],
+            'label':'%s (%s)' % (film['title'], film['year']), 
+            'path':plugin.url_for('index')
         })
     
     # Return

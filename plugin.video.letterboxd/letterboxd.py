@@ -1,4 +1,5 @@
 # Imports
+from __future__ import division
 import re
 import requests
 
@@ -28,11 +29,20 @@ def get_user_diary(page=1):
         year = film.find('td', {'class':'td-released center'}).text
         watched = film.find('td', {'class':'td-day diary-day center'})
         watched = '.'.join(reversed(watched.find('a')['href'].split('/')[-4:-1]))
-        rating = film.find('meta', {'itemprop':'rating'})['content']
+        rating = (int(film.find('meta', {'itemprop':'rating'})['content']) / 2)
         liked = True if film.find('span', {'class':'has-icon icon-16 large-liked icon-liked'}) else False
         rewatch = False if film.find('td', {'class':'td-rewatch center icon-status-off'}) else True
+        poster = film.find('img')['src']
         
-        films.append({'title':title, 'year':year, 'watched':watched, 'rating':rating, 'liked':liked, 'rewatch':rewatch})
+        films.append({
+            'title':title, 
+            'year':year, 
+            'watched':watched, 
+            'rating':rating, 
+            'liked':liked, 
+            'rewatch':rewatch,
+            'poster':poster
+        })
         
     # Return
     return films
@@ -44,14 +54,18 @@ def get_user_watchlist():
     
     # Get data
     data = soup(download_page(URL_USER_WATCHLIST))
-    data = data.find('ul', {'class':'posters film-list clear posters-125 equalize'})
-    data = data.findAll('a', {'class':'frame'})
+    data = data.findAll('li', {'class':'poster-container'})
     
     for film in data:
-        title = re.sub(r'\((.+)\)', ' ', film['title']).strip()
-        year = re.search(r'\(([0-9]{4})\)', film['title']).group(1)
+        title =  re.sub(r'\((.+)\)', ' ', film.find('a', {'class':'frame'})['title']).strip()
+        year = re.search(r'\(([0-9]{4})\)', film.find('a', {'class':'frame'})['title']).group(1)
+        poster = film.find('img')['src']
         
-        films.append({'title':title, 'year':year})
+        films.append({
+            'title':title,
+            'year':year, 
+            'poster':poster
+        })
 
     # Return
     return films
@@ -62,4 +76,4 @@ def get_user_lists(username):
     pass
 
 
-#films = get_diary()
+#films = get_user_diary()
