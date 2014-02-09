@@ -10,7 +10,7 @@
   <extension point="xbmc.addon.metadata">
     <platform>all</platform>
     <language></language>
-    <summary>Summary for "Letterboxd"</summary>
-    <description>Description for "Letterboxd"</description>
+    <summary>Letterboxd for XBMC</summary>
+    <description>Browse your diary, watchlist and lists - as well as your network - from within XBMC</description>
   </extension>
 </addon>

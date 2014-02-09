@@ -7,11 +7,15 @@ plugin = Plugin()
 
 @plugin.route('/')
 def index():
+    # Items
     items = [
         {'label': 'Diary', 'path': plugin.url_for('diary')},
         {'label': 'Watchlist', 'path': plugin.url_for('watchlist')},
         {'label': 'Lists', 'path': plugin.url_for('lists')},
+        {'label': 'Network', 'path': plugin.url_for('network')},
     ]
+    
+    # Return
     return items
     
     
@@ -53,15 +57,46 @@ def watchlist():
     
 @plugin.route('/lists')
 def lists():
+    # Items
     items = []
+    # Return
     return items
     
-    
-@plugin.route('/film/<id>')
-def film(id):
-    items = []
+
+# ============= Network ======================================================================
+@plugin.route('/network')
+def network():
+    items = [
+        {'label': 'Following', 'path': plugin.url_for('network_following')},
+        {'label': 'Followers', 'path': plugin.url_for('network_followers')},
+    ]
     return items
 
+    
+@plugin.route('/network_following')
+def network_following():
+    # Items
+    items = []
+    
+    # Get following list
+    for person in letterboxd.get_user_following():
+        items.append({
+            'icon':person['avatar'],
+            'thumbnail':person['avatar'],
+            'label':'%s' % (person['name']), 
+            'path':plugin.url_for('index')
+        })
+    
+    # Return
+    return items
+    
+    
+@plugin.route('/network_followers')
+def network_followers():
+    # Items
+    items = []
+    # Return
+    return items
 
 
 if __name__ == '__main__':

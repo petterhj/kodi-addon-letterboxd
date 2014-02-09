@@ -14,6 +14,7 @@ URL_MAIN = 'http://www.letterboxd.com'
 URL_USER = URL_MAIN + '/' + USERNAME
 URL_USER_DIARY = URL_USER + '/films/diary/page/'
 URL_USER_WATCHLIST = URL_USER + '/watchlist'
+URL_USER_FOLLOWING = URL_USER + '/following'
 
 # Get diary entries
 def get_user_diary(page=1):
@@ -69,11 +70,35 @@ def get_user_watchlist():
 
     # Return
     return films
-
+    
     
 # Get user lists
 def get_user_lists(username):
     pass
+    
+    
+# Get user following
+def get_user_following():
+    people = []
+    
+    # Get data
+    data = soup(download_page(URL_USER_FOLLOWING))
+    data = data.findAll('td', {'class':'table-person'})
+    
+    for person in data:
+        name = person.find('h3', {'class':'name-heading'}).text
+        avatar = person.find('img')['src']
+
+        people.append({
+            'name':name,
+            'avatar':avatar
+        })
+
+    # Return
+    return people
+
+    
 
 
-#films = get_user_diary()
+
+films = get_user_following()
