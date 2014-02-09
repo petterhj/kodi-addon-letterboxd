@@ -15,7 +15,7 @@ def index(username=plugin.get_setting('username')):
     # Items
     items = [
         {'label': 'Diary', 'path': plugin.url_for('diary', username=username, page='1')},
-        {'label': 'Watchlist', 'path': plugin.url_for('watchlist', username=username, page='1')},
+        {'label': 'Watchlist', 'path': plugin.url_for('list', username=username, slug='watchlist', page='1')},
         {'label': 'Lists', 'path': plugin.url_for('lists', username=username, page='1')},
         {'label': 'Network', 'path': plugin.url_for('network', username=username)},
     ] 
@@ -33,28 +33,13 @@ def diary(username, page):
         'thumbnail':film['poster'],
         'label':'%s (%s) | %s' % (film['title'], film['year'], film['rating']),
         'path':plugin.url_for('index')
-    } for film in letterboxd.get__diary(username, page)]
+    } for film in letterboxd.get_diary(username, page)]
     
     # Return
     return items
     
     
 # ============= Lists ========================================================================
-    
-# Watchlist
-@plugin.route('/watchlist/<username>/<page>')
-def watchlist(username, page):
-    # Items
-    items = [{
-        'icon':film['poster'],
-        'thumbnail':film['poster'],
-        'label':'%s (%s)' % (film['title'], film['year']), 
-        'path':plugin.url_for('index')
-    } for film in letterboxd.get__watchlist(username, page)]
-    
-    # Return
-    return items
-    
 
 # Lists
 @plugin.route('/lists/<username>/<page>')
@@ -64,8 +49,23 @@ def lists(username, page):
         'icon':'',
         'thumbnail':'',
         'label':'%s (%s films)' % (list['title'], list['count']),
-        'path':plugin.url_for('index')
+        'path':plugin.url_for('list', username=username, slug=list['slug'], page=1)
     } for list in letterboxd.get_lists(username, page)]
+    
+    # Return
+    return items
+
+    
+# List
+@plugin.route('/list/<username>/<slug>/<page>')
+def list(username, slug, page):
+    # Items
+    items = [{
+        'icon':film['poster'],
+        'thumbnail':film['poster'],
+        'label':'%s (%s)' % (film['title'], film['year']), 
+        'path':plugin.url_for('index')
+    } for film in letterboxd.get_list(username, slug, page)]
     
     # Return
     return items
@@ -90,7 +90,7 @@ def network(username):
 @plugin.route('/people/<username>/<type>')
 def people(username, type):
     # Items
-    people = letterboxd.get__following(username) if type == 'following' else letterboxd.get__followers(username)
+    people = letterboxd.get_following(username) if type == 'following' else letterboxd.get_followers(username)
     
     items = [{
         'icon':person['avatar'],
