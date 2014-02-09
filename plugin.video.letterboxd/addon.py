@@ -33,7 +33,7 @@ def diary(username, page):
         'thumbnail':film['poster'],
         'label':'%s (%s) | %s' % (film['title'], film['year'], film['rating']),
         'path':plugin.url_for('index')
-    } for film in letterboxd.get_user_diary(username, page)]
+    } for film in letterboxd.get__diary(username, page)]
     
     # Return
     return items
@@ -50,7 +50,7 @@ def watchlist(username, page):
         'thumbnail':film['poster'],
         'label':'%s (%s)' % (film['title'], film['year']), 
         'path':plugin.url_for('index')
-    } for film in letterboxd.get_user_watchlist(username, page)]
+    } for film in letterboxd.get__watchlist(username, page)]
     
     # Return
     return items
@@ -90,7 +90,7 @@ def network(username):
 @plugin.route('/people/<username>/<type>')
 def people(username, type):
     # Items
-    people = letterboxd.get_user_following(username) if type == 'following' else letterboxd.get_user_followers(username)
+    people = letterboxd.get__following(username) if type == 'following' else letterboxd.get__followers(username)
     
     items = [{
         'icon':person['avatar'],

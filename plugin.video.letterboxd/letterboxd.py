@@ -19,7 +19,7 @@ URL_USER_FOLLOWERS  = URL_USER + '/followers'
 
 
 # Get diary entries
-def get_user_diary(username, page):
+def get__diary(username, page):
     films = []
     
     # Get data
@@ -56,7 +56,7 @@ def get_user_diary(username, page):
     
     
 # Get user watchlist
-def get_user_watchlist(username, page):
+def get__watchlist(username, page):
     films = []
     
     # Get data
@@ -105,7 +105,7 @@ def get_lists(username, page):
 # ============= Network ======================================================================
 
 # Get following
-def get_user_following(username):
+def get__following(username):
     # People
     people = []
     
@@ -130,7 +130,7 @@ def get_user_following(username):
 
     
 # Get followers
-def get_user_followers(username):
+def get__followers(username):
     people = []
     
     # Get data
