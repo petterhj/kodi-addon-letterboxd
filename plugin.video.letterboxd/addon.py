@@ -8,10 +8,17 @@ import letterboxd
 plugin = Plugin()
 
 
+# ============= Profile ======================================================================
+
 # Index
 @plugin.route('/')
 @plugin.route('/profile/<username>', name='profile')
 def index(username=plugin.get_setting('username')):
+    # Settings
+    if not username:
+        plugin.open_settings()
+        username = plugin.get_setting('username')
+    
     # Items
     items = [
         {'label': 'Diary', 'path': plugin.url_for('diary', username=username, page='1')},
@@ -63,7 +70,7 @@ def list(username, slug, page):
     items = [{
         'icon':film['poster'],
         'thumbnail':film['poster'],
-        'label':'%s (%s)' % (film['title'], film['year']), 
+        'label':'%s. %s (%s)' % (film['pos'], film['title'], film['year']) if film['pos'] else '%s (%s)' % (film['title'], film['year']),
         'path':plugin.url_for('index')
     } for film in letterboxd.get_list(username, slug, page)]
     

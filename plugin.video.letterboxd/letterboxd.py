@@ -30,7 +30,7 @@ def get_diary(username, page):
     
     if not data.find('h2', {'class':'ui-block-heading'}):
         data = data.find('table', {'id':'diary-table'})
-        data = data.findAll('tr', {'class':'diary-entry-row'})
+        data = data.findAll('tr')
         
         for film in data:
             title = film.find('h3', {'class':'film-title prettify'}).text
@@ -64,9 +64,9 @@ def get_lists(username, page):
     data = data.findAll('div', {'class':'film-list-summary'})
     
     lists = [{
-        'title':list.find('h2').text,
-        'count':list.find('small').text.split('&')[0],
-        'slug':list.find('a')['href'].split('/')[-2]
+        'title':_getText(list, tag='h2'),
+        'count':_getText(list, tag='small', split=True, delimeter='&'),
+        'slug':_getText(list, tag='a', attr='href', split=True, delimeter='/', index=-2)
     } for list in data]
     
     # Return
@@ -78,12 +78,13 @@ def get_list(username, slug, page):
     # Films
     url = (URL_USER_WATCHLIST) % (username, page) if slug == 'watchlist' else (URL_USER_LIST) % (username, slug, page)
     data = soup(download_page(url))
-    data = data.findAll('li', {'class':'poster-container'})
+    data = data.findAll('li', {'class':re.compile(r'\poster-container\b')})
     
     films = [{
         'title':re.sub(r'\((.+)\)', ' ', film.find('a', {'class':'frame'})['title']).strip(),
         'year':re.search(r'\(([0-9]{4})\)', film.find('a', {'class':'frame'})['title']).group(1),
-        'poster':film.find('img')['src']
+        'poster':_getText(film, tag='img', attr='src'),
+        'pos':_getText(film, tag='p', cls={'class':'list-number'})
     } for film in data]
     
     # Return
@@ -141,6 +142,27 @@ def get_followers(username):
     return people
     
 
+# ============= Helpers ======================================================================
+
+# Find tag
+def _getText(soup, tag, cls={}, attr=None, split=False, delimeter='', index=0):
+    tag = soup.find(tag, cls)
+    
+    if tag:
+        if attr:
+            text = tag[attr]
+        else:
+            text = tag.text
+            
+        # Split
+        if split:
+            text = text.split(delimeter)[index]
+    else:
+        text = None
+        
+    return text
 
 
-#print get_list('petterhj', 'wishlist', '1')
+# ============= Debug ========================================================================
+    
+#print get_lists('petterhj', '1')
