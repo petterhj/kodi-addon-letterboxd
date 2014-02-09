@@ -1,6 +1,7 @@
 # Imports
 from xbmcswift2 import Plugin
 
+import context_menus
 import letterboxd
 
 
@@ -21,7 +22,11 @@ def index(username=plugin.get_setting('username')):
     
     # Items
     items = [
-        {'label': 'Diary', 'path': plugin.url_for('diary', username=username, page='1')},
+        {
+            'label': 'Diary', 
+            'context_menu': context_menus.list(),
+            'path': plugin.url_for('diary', username=username, page='1')
+        },
         {'label': 'Watchlist', 'path': plugin.url_for('list', username=username, slug='watchlist', page='1')},
         {'label': 'Lists', 'path': plugin.url_for('lists', username=username, page='1')},
         {'label': 'Network', 'path': plugin.url_for('network', username=username)},
@@ -74,6 +79,7 @@ def list(username, slug, page):
         'icon':film['poster'],
         'thumbnail':film['poster'],
         'label':label_ranked % (film['pos'], film['title'], film['year']) if film['pos'] else label % (film['title'], film['year']),
+        'context_menu': context_menus.film(film['title']),
         'path':plugin.url_for('index')
     } for film in letterboxd.get_list(username, slug, page)]
     

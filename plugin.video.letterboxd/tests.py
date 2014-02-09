@@ -1,8 +1,13 @@
 # Imports
 import letterboxd
 
+foo = '
+test = [('Refresh', 'XBMC.RunScript(special://home/scripts/showtimes/default.py,%s)' % (foo))]
+
+print test
+
 # Tests
-run_lists()
+#run_lists()
 
 def run_lists():
     lists = [
