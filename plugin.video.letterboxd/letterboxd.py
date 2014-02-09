@@ -15,6 +15,8 @@ URL_USER = URL_MAIN + '/' + USERNAME
 URL_USER_DIARY = URL_USER + '/films/diary/page/'
 URL_USER_WATCHLIST = URL_USER + '/watchlist'
 URL_USER_FOLLOWING = URL_USER + '/following'
+URL_USER_FOLLOWERS = URL_USER + '/followers'
+
 
 # Get diary entries
 def get_user_diary(page=1):
@@ -98,7 +100,27 @@ def get_user_following():
     return people
 
     
+# Get user followers
+def get_user_following():
+    people = []
+    
+    # Get data
+    data = soup(download_page(URL_USER_FOLLOWERS))
+    data = data.findAll('td', {'class':'table-person'})
+    
+    for person in data:
+        name = person.find('h3', {'class':'name-heading'}).text
+        avatar = person.find('img')['src']
+
+        people.append({
+            'name':name,
+            'avatar':avatar
+        })
+
+    # Return
+    return people
+    
 
 
 
-films = get_user_following()
+#films = get_user_following()

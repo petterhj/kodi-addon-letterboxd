@@ -95,9 +95,20 @@ def network_following():
 def network_followers():
     # Items
     items = []
+    
+    # Get following list
+    for person in letterboxd.get_user_following():
+        items.append({
+            'icon':person['avatar'],
+            'thumbnail':person['avatar'],
+            'label':'%s' % (person['name']), 
+            'path':plugin.url_for('index')
+        })
+    
     # Return
     return items
 
 
+# ============= Main =========================================================================
 if __name__ == '__main__':
     plugin.run()
