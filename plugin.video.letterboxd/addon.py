@@ -12,9 +12,6 @@ plugin = Plugin()
 @plugin.route('/')
 @plugin.route('/profile/<username>', name='profile')
 def index(username=plugin.get_setting('username')):
-    # Username
-    #username = ''
-
     # Items
     items = [
         {'label': 'Diary', 'path': plugin.url_for('diary', username=username, page='1')},
@@ -31,16 +28,12 @@ def index(username=plugin.get_setting('username')):
 @plugin.route('/diary/<username>/<page>')
 def diary(username, page):
     # Items
-    items = []
-    
-    # Get user watchlist items
-    for film in letterboxd.get_user_diary(username, page):
-        items.append({
-            'icon':film['poster'],
-            'thumbnail':film['poster'],
-            'label':'%s (%s) | %s' % (film['title'], film['year'], film['rating']),
-            'path':plugin.url_for('index')
-        })
+    items = [{
+        'icon':film['poster'],
+        'thumbnail':film['poster'],
+        'label':'%s (%s) | %s' % (film['title'], film['year'], film['rating']),
+        'path':plugin.url_for('index')
+    } for film in letterboxd.get_user_diary(username, page)]
     
     # Return
     return items
@@ -52,16 +45,12 @@ def diary(username, page):
 @plugin.route('/watchlist/<username>/<page>')
 def watchlist(username, page):
     # Items
-    items = []
-    
-    # Get user watchlist items
-    for film in letterboxd.get_user_watchlist(username, page):
-        items.append({
-            'icon':film['poster'],
-            'thumbnail':film['poster'],
-            'label':'%s (%s)' % (film['title'], film['year']), 
-            'path':plugin.url_for('index')
-        })
+    items = [{
+        'icon':film['poster'],
+        'thumbnail':film['poster'],
+        'label':'%s (%s)' % (film['title'], film['year']), 
+        'path':plugin.url_for('index')
+    } for film in letterboxd.get_user_watchlist(username, page)]
     
     # Return
     return items
@@ -71,16 +60,12 @@ def watchlist(username, page):
 @plugin.route('/lists/<username>/<page>')
 def lists(username, page):
     # Items
-    items = []
-    
-    # Get user watchlist items
-    for list in letterboxd.get_lists(username, page):
-        items.append({
-            'icon':'',
-            'thumbnail':'',
-            'label':'%s (%s films)' % (list['title'], list['count']),
-            'path':plugin.url_for('index')
-        })
+    items = [{
+        'icon':'',
+        'thumbnail':'',
+        'label':'%s (%s films)' % (list['title'], list['count']),
+        'path':plugin.url_for('index')
+    } for list in letterboxd.get_lists(username, page)]
     
     # Return
     return items
@@ -91,46 +76,28 @@ def lists(username, page):
 # Network
 @plugin.route('/network/<username>')
 def network(username):
-    items = [
-        {'label': 'Following', 'path': plugin.url_for('network_following', username=username)},
-        {'label': 'Followers', 'path': plugin.url_for('network_followers', username=username)},
-    ]
-    return items
-
-
-# Following
-@plugin.route('/network_following/<username>')
-def network_following(username):
     # Items
-    items = []
-    
-    # Get following list
-    for person in letterboxd.get_user_following(username):
-        items.append({
-            'icon':person['avatar'],
-            'thumbnail':person['avatar'],
-            'label':'%s' % (person['name']),
-            'path':plugin.url_for('profile', username=person['username'])
-        })
+    items = [
+        {'label': 'Following', 'path': plugin.url_for('people', username=username, type="following")},
+        {'label': 'Followers', 'path': plugin.url_for('people', username=username, type="followers")},
+    ]
     
     # Return
     return items
-    
 
-# Followers    
-@plugin.route('/network_followers/<username>')
-def network_followers(username):
+
+# People
+@plugin.route('/people/<username>/<type>')
+def people(username, type):
     # Items
-    items = []
+    people = letterboxd.get_user_following(username) if type == 'following' else letterboxd.get_user_followers(username)
     
-    # Get following list
-    for person in letterboxd.get_user_followers(username):
-        items.append({
-            'icon':person['avatar'],
-            'thumbnail':person['avatar'],
-            'label':'%s' % (person['name']), 
-            'path':plugin.url_for('diary', username=person['username'], page='1')
-        })
+    items = [{
+        'icon':person['avatar'],
+        'thumbnail':person['avatar'],
+        'label':'%s' % (person['name']),
+        'path':plugin.url_for('profile', username=person['username'])
+    } for person in people]
     
     # Return
     return items
