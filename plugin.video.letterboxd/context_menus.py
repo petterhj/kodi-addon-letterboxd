@@ -13,7 +13,7 @@ def film(movie_title):
     # Menu
     menu = [
         ('Search Trailer on YouTube', 'XBMC.Container.Update(plugin://plugin.video.youtube/?path=/root/search&feed=search&search=%s+Trailer)' % movie_title)
-        ('Add to CouchPotato', '')
+        #('Add to CouchPotato', '')
     ]
     
     # Return
