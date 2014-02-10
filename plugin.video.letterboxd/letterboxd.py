@@ -30,10 +30,12 @@ def get_diary(username, page):
     
     if not data.find('h2', {'class':'ui-block-heading'}):
         data = data.find('table', {'id':'diary-table'})
+        data = data.find('tbody')
         data = data.findAll('tr')
         
         for film in data:
-            title = film.find('h3', {'class':'film-title prettify'}).text
+            print film
+            title = film.find('span', {'class':'frame-title'}).text
             year = film.find('td', {'class':'td-released center'}).text
             watched = film.find('td', {'class':'td-day diary-day center'})
             watched = '.'.join(reversed(watched.find('a')['href'].split('/')[-4:-1]))

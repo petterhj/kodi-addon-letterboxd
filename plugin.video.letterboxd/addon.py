@@ -47,7 +47,7 @@ def diary(username, page):
         'icon':film['poster'],
         'thumbnail':film['poster'],
         'label':'%s (%s)' % (film['title'], film['year']),
-        'info': {'genre': 'Rating: %s' % (film['rating'])},
+        'info': {'genre': 'Watched: %s | Rating: %s | Liked: %s | Rewatch: %s' % (film['watched'], film['rating'], film['liked'], film['rewatch'])},
         'context_menu': context_menus.film(film['title']),
         'replace_context_menu': True,
         'path':plugin.url_for('index')
