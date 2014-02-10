@@ -39,11 +39,17 @@ def index(username=plugin.get_setting('username')):
 # Diary
 @plugin.route('/diary/<username>/<page>')
 def diary(username, page):
+    # Content type
+    plugin.set_content('movies')
+    
     # Items
     items = [{
         'icon':film['poster'],
         'thumbnail':film['poster'],
-        'label':'%s (%s) | %s' % (film['title'], film['year'], film['rating']),
+        'label':'%s (%s)' % (film['title'], film['year']),
+        'info': {'genre': 'Rating: %s' % (film['rating'])},
+        'context_menu': context_menus.film(film['title']),
+        'replace_context_menu': True,
         'path':plugin.url_for('index')
     } for film in letterboxd.get_diary(username, page)]
     
@@ -71,16 +77,21 @@ def lists(username, page):
 # List
 @plugin.route('/list/<username>/<slug>/<page>')
 def list(username, slug, page):
+    # Content type
+    plugin.set_content('movies')
+    
     # Items
     label = '%s (%s)'
-    label_ranked = '[COLOR yellow]%s.[/COLOR] %s (%s)'
+    label_ranked = '[COLOR yellow]%s.[/COLOR] ' + label
     
     items = [{
-        'icon':film['poster'],
-        'thumbnail':film['poster'],
-        'label':label_ranked % (film['pos'], film['title'], film['year']) if film['pos'] else label % (film['title'], film['year']),
+        'icon': film['poster'],
+        'thumbnail': film['poster'],
+        'label': label_ranked % (film['pos'], film['title'], film['year']) if film['pos'] else label % (film['title'], film['year']),
+        'info': {'genre': 'test, foo, bar'},
         'context_menu': context_menus.film(film['title']),
-        'path':plugin.url_for('index')
+        'replace_context_menu': True,
+        'path': plugin.url_for('index')
     } for film in letterboxd.get_list(username, slug, page)]
     
     # Return
