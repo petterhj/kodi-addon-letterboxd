@@ -15,44 +15,42 @@ URL_USER_DIARY      = URL_USER + '/films/diary'
 URL_USER_WATCHLIST  = URL_USER + '/watchlist' + URL_PAGE
 URL_USER_LISTS      = URL_USER + '/lists'
 URL_USER_LIST       = URL_USER + '/list/%s' + URL_PAGE
-URL_USER_FOLLOWING  = URL_USER + '/following'
-URL_USER_FOLLOWERS  = URL_USER + '/followers'
+URL_USER_FOLLOWING  = URL_USER + '/following' + URL_PAGE
+URL_USER_FOLLOWERS  = URL_USER + '/followers' + URL_PAGE
 
 
 # Get diary
 def get_diary(username, page):
+    # Films
     films = []
+    data = _getData((URL_USER_DIARY + URL_PAGE) % (username, page))
     
-    # Get data
-    url = (URL_USER_DIARY + URL_PAGE) % (username, page)
-    print url
-    data = soup(download_page(url))
-    
-    if not data.find('h2', {'class':'ui-block-heading'}):
-        data = data.find('table', {'id':'diary-table'})
-        data = data.find('tbody')
-        data = data.findAll('tr')
+    if data:    
+        if not data.find('h2', {'class':'ui-block-heading'}):
+            data = data.find('table', {'id':'diary-table'})
+            data = data.find('tbody')
+            data = data.findAll('tr')
         
-        for film in data:
-            print film
-            title = film.find('span', {'class':'frame-title'}).text
-            year = film.find('td', {'class':'td-released center'}).text
-            watched = film.find('td', {'class':'td-day diary-day center'})
-            watched = '.'.join(reversed(watched.find('a')['href'].split('/')[-4:-1]))
-            rating = (int(film.find('meta', {'itemprop':'rating'})['content']) / 2)
-            liked = True if film.find('span', {'class':'has-icon icon-16 large-liked icon-liked'}) else False
-            rewatch = False if film.find('td', {'class':'td-rewatch center icon-status-off'}) else True
-            poster = film.find('img')['src']
+            for film in data:
+                print film
+                title = film.find('span', {'class':'frame-title'}).text
+                year = film.find('td', {'class':'td-released center'}).text
+                watched = film.find('td', {'class':'td-day diary-day center'})
+                watched = '.'.join(reversed(watched.find('a')['href'].split('/')[-4:-1]))
+                rating = (int(film.find('meta', {'itemprop':'rating'})['content']) / 2)
+                liked = True if film.find('span', {'class':'has-icon icon-16 large-liked icon-liked'}) else False
+                rewatch = False if film.find('td', {'class':'td-rewatch center icon-status-off'}) else True
+                poster = film.find('img')['src']
             
-            films.append({
-                'title':title, 
-                'year':year, 
-                'watched':watched, 
-                'rating':rating, 
-                'liked':liked, 
-                'rewatch':rewatch,
-                'poster':poster
-            })
+                films.append({
+                    'title':title, 
+                    'year':year, 
+                    'watched':watched, 
+                    'rating':rating, 
+                    'liked':liked, 
+                    'rewatch':rewatch,
+                    'poster':poster
+                })
 
     # Return
     return films
@@ -61,15 +59,17 @@ def get_diary(username, page):
 # Get lists
 def get_lists(username, page):
     # Lists
-    url = (URL_USER_LISTS) % (username)
-    data = soup(download_page(url))
-    data = data.findAll('div', {'class':'film-list-summary'})
+    lists = []
+    data = _getData((URL_USER_LISTS) % (username))
+
+    if data:
+        data = data.findAll('div', {'class':'film-list-summary'})
     
-    lists = [{
-        'title':_getText(list, tag='h2'),
-        'count':_getText(list, tag='small', split=True, delimeter='&'),
-        'slug':_getText(list, tag='a', attr='href', split=True, delimeter='/', index=-2)
-    } for list in data]
+        lists = [{
+            'title':_getText(list, tag='h2'),
+            'count':_getText(list, tag='small', split=True, delimeter='&'),
+            'slug':_getText(list, tag='a', attr='href', split=True, delimeter='/', index=-2)
+        } for list in data]
     
     # Return
     return lists
@@ -78,16 +78,19 @@ def get_lists(username, page):
 # Get list
 def get_list(username, slug, page):
     # Films
+    films = []
     url = (URL_USER_WATCHLIST) % (username, page) if slug == 'watchlist' else (URL_USER_LIST) % (username, slug, page)
-    data = soup(download_page(url))
-    data = data.findAll('li', {'class':re.compile(r'\poster-container\b')})
+    data = _getData(url)
+
+    if data:
+        data = data.findAll('li', {'class':re.compile(r'\poster-container\b')})
     
-    films = [{
-        'title':re.sub(r'\((.+)\)', ' ', film.find('a', {'class':'frame'})['title']).strip(),
-        'year':re.search(r'\(([0-9]{4})\)', film.find('a', {'class':'frame'})['title']).group(1),
-        'poster':_getText(film, tag='img', attr='src'),
-        'pos':_getText(film, tag='p', cls={'class':'list-number'})
-    } for film in data]
+        films = [{
+            'title':re.sub(r'\((.+)\)', ' ', film.find('a', {'class':'frame'})['title']).strip(),
+            'year':re.search(r'\(([0-9]{4})\)', film.find('a', {'class':'frame'})['title']).group(1),
+            'poster':_getText(film, tag='img', attr='src'),
+            'pos':_getText(film, tag='p', cls={'class':'list-number'})
+        } for film in data]
     
     # Return
     return films
@@ -96,55 +99,43 @@ def get_list(username, slug, page):
 # ============= Network ======================================================================
 
 # Get following
-def get_following(username):
+def get_people(username, type, page):
     # People
     people = []
-    
-    # Get data
-    url = (URL_USER_FOLLOWING) % (username)
-    data = soup(download_page(url))
-    data = data.findAll('td', {'class':'table-person'})
-    
-    for person in data:
-        name = person.find('h3', {'class':'name-heading'}).text
-        username = person.find('h3', {'class':'name-heading'}).find('a')['href'].replace('/', '')
-        avatar = person.find('img')['src']
 
-        people.append({
-            'name':name,
-            'username':username,
-            'avatar':avatar
-        })
+    url = URL_USER_FOLLOWING if type == "following" else URL_USER_FOLLOWERS
+    print (url) % (username, page)
+    data = _getData((url) % (username, page))
 
-    # Return
-    return people
+    if data:    
+        data = data.findAll('td', {'class':'table-person'})
+    
+        for person in data:
+            name = person.find('h3', {'class':'name-heading'}).text
+            username = person.find('h3', {'class':'name-heading'}).find('a')['href'].replace('/', '')
+            avatar = person.find('img')['src']
 
-    
-# Get followers
-def get_followers(username):
-    people = []
-    
-    # Get data
-    url = (URL_USER_FOLLOWERS) % (username)
-    data = soup(download_page(url))
-    data = data.findAll('td', {'class':'table-person'})
-    
-    for person in data:
-        name = person.find('h3', {'class':'name-heading'}).text
-        username = person.find('h3', {'class':'name-heading'}).find('a')['href'].replace('/', '')
-        avatar = person.find('img')['src']
-
-        people.append({
-            'name':name,
-            'username':username,
-            'avatar':avatar
-        })
+            people.append({
+                'name': name,
+                'username': username,
+                'avatar': avatar
+            })
 
     # Return
     return people
-    
+
 
 # ============= Helpers ======================================================================
+
+# Get page data
+def _getData(url):
+    try:
+        data = soup(download_page(url))
+    except:
+        return None
+    else:
+        return data
+
 
 # Find tag
 def _getText(soup, tag, cls={}, attr=None, split=False, delimeter='', index=0):
@@ -163,8 +154,3 @@ def _getText(soup, tag, cls={}, attr=None, split=False, delimeter='', index=0):
         text = None
         
     return text
-
-
-# ============= Debug ========================================================================
-    
-#print get_lists('petterhj', '1')

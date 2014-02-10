@@ -102,8 +102,8 @@ def list(username, slug, page):
 def network(username):
     # Items
     items = [
-        {'label': 'Following', 'path': plugin.url_for('people', username=username, type="following")},
-        {'label': 'Followers', 'path': plugin.url_for('people', username=username, type="followers")},
+        {'label': 'Following', 'path': plugin.url_for('people', username=username, type='following', page='1')},
+        {'label': 'Followers', 'path': plugin.url_for('people', username=username, type='followers', page='1')},
     ]
     
     # Return
@@ -111,10 +111,10 @@ def network(username):
 
 
 # People
-@plugin.route('/people/<username>/<type>')
-def people(username, type):
+@plugin.route('/people/<username>/<type>/<page>')
+def people(username, type, page):
     # Items
-    people = letterboxd.get_following(username) if type == 'following' else letterboxd.get_followers(username)
+    people = letterboxd.get_people(username, type, page)
     
     items = [{
         'icon':person['avatar'],
