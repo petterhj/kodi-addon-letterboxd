@@ -22,14 +22,11 @@ def index(username=plugin.get_setting('username')):
     
     # Items
     items = [
-        {
-            'label': 'Diary', 
-            'context_menu': context_menus.list(),
-            'path': plugin.url_for('diary', username=username, page='1')
-        },
+        {'label': 'Diary', 'context_menu': context_menus.list(), 'path': plugin.url_for('diary', username=username, page='1')},
         {'label': 'Watchlist', 'path': plugin.url_for('list', username=username, slug='watchlist', page='1')},
         {'label': 'Lists', 'path': plugin.url_for('lists', username=username, page='1')},
         {'label': 'Network', 'path': plugin.url_for('network', username=username)},
+        {'label': 'Discover', 'path': plugin.url_for('discover')},
     ] 
     
     # Return
@@ -125,6 +122,27 @@ def people(username, type):
         'label':'%s' % (person['name']),
         'path':plugin.url_for('profile', username=person['username'])
     } for person in people]
+    
+    # Return
+    return items
+
+
+# ============= Discover =====================================================================
+
+# Diary
+@plugin.route('/discover')
+def discover():
+    # Items
+    items = [
+        {'label': 'Films by year', 'path': plugin.url_for('index')},
+        {'label': 'Films by genre', 'path': plugin.url_for('index')},  
+        {'label': 'Films by popularity', 'path': plugin.url_for('index')},
+        {'label': 'Films by rating', 'path': plugin.url_for('index')},  
+        {'label': 'Just reviewed', 'path': plugin.url_for('index')},
+        {'label': 'Popular reviews this week', 'path': plugin.url_for('index')},
+        {'label': 'Popular reviewers', 'path': plugin.url_for('index')},
+        {'label': 'Crew picks', 'path': plugin.url_for('index')},
+    ] 
     
     # Return
     return items
