@@ -130,9 +130,10 @@ def get_people(username, type, page):
 # Get page data
 def _getData(url):
     try:
-        data = soup(download_page(url))
+        data = soup(download_page(url), convertEntities=soup.HTML_ENTITIES)
     except:
         return None
+        raise
     else:
         return data
 
