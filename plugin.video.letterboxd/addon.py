@@ -32,6 +32,8 @@ def index(username=plugin.get_setting('username')):
     # Return
     return items
 
+    
+# ============= Diary ========================================================================
 
 # Diary
 @plugin.route('/diary/<username>/<page>')
@@ -40,6 +42,8 @@ def diary(username, page):
     plugin.set_content('movies')
     
     # Items
+    films, next_page = letterboxd.get_diary(username, page)
+    
     items = [{
         'icon':film['poster'],
         'thumbnail':film['poster'],
@@ -48,7 +52,7 @@ def diary(username, page):
         'context_menu': context_menus.film(film['title']),
         'replace_context_menu': True,
         'path':plugin.url_for('index')
-    } for film in letterboxd.get_diary(username, page)]
+    } for film in films]
     
     # Return
     return items
@@ -60,12 +64,14 @@ def diary(username, page):
 @plugin.route('/lists/<username>/<page>')
 def lists(username, page):
     # Items
+    lists, next_page = letterboxd.get_lists(username, page)
+    
     items = [{
         'icon':'',
         'thumbnail':'',
         'label':'%s (%s films)' % (list['title'], list['count']),
         'path':plugin.url_for('list', username=username, slug=list['slug'], page=1)
-    } for list in letterboxd.get_lists(username, page)]
+    } for list in lists]
     
     # Return
     return items
@@ -81,6 +87,8 @@ def list(username, slug, page):
     label = '%s (%s)'
     label_ranked = '[COLOR yellow]%s.[/COLOR] ' + label
     
+    films, next_page = letterboxd.get_list(username, slug, page)
+    
     items = [{
         'icon': film['poster'],
         'thumbnail': film['poster'],
@@ -89,10 +97,13 @@ def list(username, slug, page):
         'context_menu': context_menus.film(film['title']),
         'replace_context_menu': True,
         'path': plugin.url_for('index')
-    } for film in letterboxd.get_list(username, slug, page)]
+    } for film in films]
+    
+    # Pagination
+    items = _pagination(items, page, next_page, route='list', options={'username':username, 'slug':slug})
     
     # Return
-    return items
+    return plugin.finish(items, update_listing=True)
     
 
 # ============= Network ======================================================================
@@ -114,7 +125,7 @@ def network(username):
 @plugin.route('/people/<username>/<type>/<page>')
 def people(username, type, page):
     # Items
-    people = letterboxd.get_people(username, type, page)
+    people, next_page = letterboxd.get_people(username, type, page)
     
     items = [{
         'icon':person['avatar'],
@@ -158,17 +169,37 @@ def genres():
     ]
     
     # Items
-    items = [{
-        'label':'%s' % (genre),
-        #'path':plugin.url_for('genre', slug=genre.replace(' ', '-').lower())
-        'path':plugin.url_for('index')
-    } for genre in genres]
+    #'path':plugin.url_for('genre', slug=genre.replace(' ', '-').lower())
+    items = [{'label':'%s' % (genre), 'path':plugin.url_for('index')} for genre in genres]
 
     # Return
     return items
     
 
 # ============= Main =========================================================================
+
+# Pagination
+def _pagination(items, page, next_page, route, options):
+    # Next/Prev
+    if next_page:
+        options['page'] = str(next_page)
+    
+        items.append({
+            'label': 'Next page >>',
+            'path': plugin.url_for(route, **options)
+        })
+        
+    if int(page) > 1:
+        options['page'] = str((int(page) - 1))
+        
+        items.insert(0, {
+            'label': '<< Previous page',
+            'path': plugin.url_for(route, **options)
+        })
+    
+    # Return
+    return items
+    
 
 # Main
 if __name__ == '__main__':

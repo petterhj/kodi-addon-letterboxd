@@ -1,6 +1,20 @@
 # Imports
 import letterboxd
 
+def run_films():
+    genres = [
+        {'genre':'action', 'page':'1'},
+        #{'username':'petterhj', 'slug':'get-julekalender-2013', 'page':'1'}
+    ]
+    
+    for genre in genres:
+        print '='*50
+        for film in letterboxd.get_films(**diary):
+            for key in film:
+                print film[key], '|',
+            print
+            
+
 def run_diaries():
     diaries = [
         {'username':'petterhj', 'page':'1'},
@@ -27,7 +41,11 @@ def run_lists():
                 print film[key], '|',
             print
 
+
+
             
 # Tests
 #run_lists()
-run_diaries()
+#run_films()
+
+print letterboxd.get_list('petterhj', 'collection', '2')

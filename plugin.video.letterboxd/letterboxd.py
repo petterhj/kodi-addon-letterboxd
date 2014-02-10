@@ -10,6 +10,7 @@ from xbmcswift2 import download_page
 # Variables
 URL_MAIN            = 'http://www.letterboxd.com'
 URL_PAGE            = '/page/%s'
+
 URL_USER            = URL_MAIN + '/%s'
 URL_USER_DIARY      = URL_USER + '/films/diary'
 URL_USER_WATCHLIST  = URL_USER + '/watchlist' + URL_PAGE
@@ -18,12 +19,17 @@ URL_USER_LIST       = URL_USER + '/list/%s' + URL_PAGE
 URL_USER_FOLLOWING  = URL_USER + '/following' + URL_PAGE
 URL_USER_FOLLOWERS  = URL_USER + '/followers' + URL_PAGE
 
+URL_FILMS           = URL_MAIN + '/films'
+URL_FILMS_GENRE     = URL_FILMS + '/%s'
+
+
+# ============= Diary ========================================================================
 
 # Get diary
 def get_diary(username, page):
     # Films
     films = []
-    data = _getData((URL_USER_DIARY + URL_PAGE) % (username, page))
+    data, next_page = _getData((URL_USER_DIARY + URL_PAGE) % (username, page))
     
     if data:    
         if not data.find('h2', {'class':'ui-block-heading'}):
@@ -32,7 +38,6 @@ def get_diary(username, page):
             data = data.findAll('tr')
         
             for film in data:
-                print film
                 title = film.find('span', {'class':'frame-title'}).text
                 year = film.find('td', {'class':'td-released center'}).text
                 watched = film.find('td', {'class':'td-day diary-day center'})
@@ -53,14 +58,16 @@ def get_diary(username, page):
                 })
 
     # Return
-    return films
+    return films, next_page
     
+    
+# ============= Lists ========================================================================
     
 # Get lists
 def get_lists(username, page):
     # Lists
     lists = []
-    data = _getData((URL_USER_LISTS) % (username))
+    data, next_page = _getData((URL_USER_LISTS) % (username))
 
     if data:
         data = data.findAll('div', {'class':'film-list-summary'})
@@ -72,7 +79,7 @@ def get_lists(username, page):
         } for list in data]
     
     # Return
-    return lists
+    return lists, next_page
    
    
 # Get list
@@ -80,7 +87,29 @@ def get_list(username, slug, page):
     # Films
     films = []
     url = (URL_USER_WATCHLIST) % (username, page) if slug == 'watchlist' else (URL_USER_LIST) % (username, slug, page)
-    data = _getData(url)
+    data, next_page = _getData(url)
+
+    if data:
+        data = data.findAll('li', {'class':re.compile(r'\poster-container\b')})
+                
+        films = [{
+            'title':re.sub(r'\((.+)\)', ' ', _getText(film, tag='a', cls={'class':'frame'}, attr='title')).strip(),
+            'year':_getText(film, tag='a', cls={'class':'frame'}, attr='title', match=r'\(([0-9]{4})\)'),
+            'poster':_getText(film, tag='img', attr='src'),
+            'pos':_getText(film, tag='p', cls={'class':'list-number'})
+        } for film in data]
+    
+    # Return
+    return films, next_page
+    
+
+# ============= Films ========================================================================
+
+# Get film
+def get_films(genre, page):
+    # Films
+    films = []
+    data, next_page = _getData((URL_FILMS_GENRE) % (slug))
 
     if data:
         data = data.findAll('li', {'class':re.compile(r'\poster-container\b')})
@@ -93,9 +122,9 @@ def get_list(username, slug, page):
         } for film in data]
     
     # Return
-    return films
-    
+    return films, next_page
 
+    
 # ============= Network ======================================================================
 
 # Get following
@@ -104,8 +133,7 @@ def get_people(username, type, page):
     people = []
 
     url = URL_USER_FOLLOWING if type == "following" else URL_USER_FOLLOWERS
-    print (url) % (username, page)
-    data = _getData((url) % (username, page))
+    data, next_page = _getData((url) % (username, page))
 
     if data:    
         data = data.findAll('td', {'class':'table-person'})
@@ -122,7 +150,7 @@ def get_people(username, type, page):
             })
 
     # Return
-    return people
+    return people, next_page
 
 
 # ============= Helpers ======================================================================
@@ -132,14 +160,24 @@ def _getData(url):
     try:
         data = soup(download_page(url), convertEntities=soup.HTML_ENTITIES)
     except:
-        return None
+        return None, None
         raise
     else:
-        return data
-
+        return data, _getNextPage(data)
+        
+        
+# Get pagination
+def _getNextPage(soup):
+    hasnext = soup.find('a', {'class': 'paginate-next'})
+    
+    if hasnext:
+        return int(hasnext['href'].split('/')[-2])
+    else:
+        return None
+    
 
 # Find tag
-def _getText(soup, tag, cls={}, attr=None, split=False, delimeter='', index=0):
+def _getText(soup, tag, cls={}, attr=None, split=False, delimeter='', index=0, match=None):
     tag = soup.find(tag, cls)
     
     if tag:
@@ -151,6 +189,10 @@ def _getText(soup, tag, cls={}, attr=None, split=False, delimeter='', index=0):
         # Split
         if split:
             text = text.split(delimeter)[index]
+            
+        # Match
+        if match:
+            text = re.search(match, text).group(1) if re.search(match, text) else None
     else:
         text = None
         
