@@ -129,13 +129,13 @@ def people(username, type, page):
 
 # ============= Discover =====================================================================
 
-# Diary
+# Discover
 @plugin.route('/discover')
 def discover():
     # Items
     items = [
         {'label': 'Films by year', 'path': plugin.url_for('index')},
-        {'label': 'Films by genre', 'path': plugin.url_for('index')},  
+        {'label': 'Films by genre', 'path': plugin.url_for('genres')},  
         {'label': 'Films by popularity', 'path': plugin.url_for('index')},
         {'label': 'Films by rating', 'path': plugin.url_for('index')},  
         {'label': 'Just reviewed', 'path': plugin.url_for('index')},
@@ -147,6 +147,26 @@ def discover():
     # Return
     return items
 
+#
+@plugin.route('/genres')
+def genres():
+    # Genres
+    genres = [
+        'Action', 'Adventure', 'Animation', 'Comedy', 'Crime', 'Documentary', 'Drama', 'Eastern', 
+        'Family', 'Fantasy', 'Film Noir', 'Foreign', 'History', 'Horror', 'Indie', 'Music', 'Musical', 
+        'Mystery', 'Romance', 'Science Fiction', 'Short', 'Sports', 'Thriller', 'War', 'Western'
+    ]
+    
+    # Items
+    items = [{
+        'label':'%s' % (genre),
+        #'path':plugin.url_for('genre', slug=genre.replace(' ', '-').lower())
+        'path':plugin.url_for('index')
+    } for genre in genres]
+
+    # Return
+    return items
+    
 
 # ============= Main =========================================================================
 
