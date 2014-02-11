@@ -54,6 +54,9 @@ def diary(username, page):
         'path':plugin.url_for('index')
     } for film in films]
     
+    # Pagination
+    items = _pagination(items, page, next_page, route='diary', options={'username':username})
+    
     # Return
     return items
     
@@ -69,9 +72,12 @@ def lists(username, page):
     items = [{
         'icon':'',
         'thumbnail':'',
-        'label':'%s (%s films)' % (list['title'], list['count']),
+        'label':'%s (%s)' % (list['title'], list['count']),
         'path':plugin.url_for('list', username=username, slug=list['slug'], page=1)
     } for list in lists]
+    
+    # Pagination
+    items = _pagination(items, page, next_page, route='lists', options={'username':username})
     
     # Return
     return items
@@ -133,6 +139,9 @@ def people(username, type, page):
         'label':'%s' % (person['name']),
         'path':plugin.url_for('profile', username=person['username'])
     } for person in people]
+    
+    # Pagination
+    items = _pagination(items, page, next_page, route='people', options={'username':username, 'type': type})
     
     # Return
     return items

@@ -14,7 +14,7 @@ URL_PAGE            = '/page/%s'
 URL_USER            = URL_MAIN + '/%s'
 URL_USER_DIARY      = URL_USER + '/films/diary'
 URL_USER_WATCHLIST  = URL_USER + '/watchlist' + URL_PAGE
-URL_USER_LISTS      = URL_USER + '/lists'
+URL_USER_LISTS      = URL_USER + '/lists' + URL_PAGE
 URL_USER_LIST       = URL_USER + '/list/%s' + URL_PAGE
 URL_USER_FOLLOWING  = URL_USER + '/following' + URL_PAGE
 URL_USER_FOLLOWERS  = URL_USER + '/followers' + URL_PAGE
@@ -67,6 +67,7 @@ def get_diary(username, page):
 def get_lists(username, page):
     # Lists
     lists = []
+    print (URL_USER_LISTS) % (username)
     data, next_page = _getData((URL_USER_LISTS) % (username))
 
     if data:
@@ -189,6 +190,7 @@ def _getText(soup, tag, cls={}, attr=None, split=False, delimeter='', index=0, m
         # Split
         if split:
             text = text.split(delimeter)[index]
+            print text
             
         # Match
         if match:
