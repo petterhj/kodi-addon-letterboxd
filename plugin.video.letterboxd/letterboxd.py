@@ -67,8 +67,7 @@ def get_diary(username, page):
 def get_lists(username, page):
     # Lists
     lists = []
-    print (URL_USER_LISTS) % (username)
-    data, next_page = _getData((URL_USER_LISTS) % (username))
+    data, next_page = _getData((URL_USER_LISTS) % (username, page))
 
     if data:
         data = data.findAll('div', {'class':'film-list-summary'})
