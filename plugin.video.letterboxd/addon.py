@@ -20,14 +20,20 @@ def index(username=plugin.get_setting('username')):
         plugin.open_settings()
         username = plugin.get_setting('username')
     
+    # Profile
+    profile = letterboxd.get_profile(username)
+    
     # Items
     items = [
         {'label': 'Diary', 'context_menu': context_menus.list(), 'path': plugin.url_for('diary', username=username, page='1')},
         {'label': 'Watchlist', 'path': plugin.url_for('list', username=username, slug='watchlist', page='1')},
-        {'label': 'Lists', 'path': plugin.url_for('lists', username=username, page='1')},
-        {'label': 'Network', 'path': plugin.url_for('network', username=username)},
-        {'label': 'Discover', 'path': plugin.url_for('discover')},
-    ] 
+        {'label': 'Lists (%s lists)' % (profile['lists']), 'path': plugin.url_for('lists', username=username, page='1')},
+        {'label': 'Network', 'path': plugin.url_for('network', username=username, following=profile['following'], followers=profile['followers'])},
+    ]
+    
+    # Discover
+    if username == plugin.get_setting('username'):
+        items.append({'label': 'Discover', 'path': plugin.url_for('discover')})
     
     # Return
     return items
@@ -48,7 +54,10 @@ def diary(username, page):
         'icon':film['poster'],
         'thumbnail':film['poster'],
         'label':'%s (%s)' % (film['title'], film['year']),
-        'info': {'genre': 'Watched: %s | Rating: %s | Liked: %s | Rewatch: %s' % (film['watched'], film['rating'], film['liked'], film['rewatch'])},
+        'info': {
+            'genre': 'Watched: %s | Rating: %s | Liked: %s | Rewatch: %s' % (film['watched'], film['rating'], film['liked'], film['rewatch']),
+            'rating': (float(film['rating']) * 2)
+        },
         'context_menu': context_menus.film(film['title']),
         'replace_context_menu': True,
         'path':plugin.url_for('index')
@@ -119,8 +128,8 @@ def list(username, slug, page):
 def network(username):
     # Items
     items = [
-        {'label': 'Following', 'path': plugin.url_for('people', username=username, type='following', page='1')},
-        {'label': 'Followers', 'path': plugin.url_for('people', username=username, type='followers', page='1')},
+        {'label': 'Following (%s people)' % (plugin.request.args['following'][0]), 'path': plugin.url_for('people', username=username, type='following', page='1')},
+        {'label': 'Followers (%s people)' % (plugin.request.args['followers'][0]), 'path': plugin.url_for('people', username=username, type='followers', page='1')},
     ]
     
     # Return
@@ -158,6 +167,7 @@ def discover():
         {'label': 'Films by genre', 'path': plugin.url_for('genres')},  
         {'label': 'Films by popularity', 'path': plugin.url_for('index')},
         {'label': 'Films by rating', 'path': plugin.url_for('index')},  
+        {'label': 'Popular with friends', 'path': plugin.url_for('index')},  
         {'label': 'Just reviewed', 'path': plugin.url_for('index')},
         {'label': 'Popular reviews this week', 'path': plugin.url_for('index')},
         {'label': 'Popular reviewers', 'path': plugin.url_for('index')},

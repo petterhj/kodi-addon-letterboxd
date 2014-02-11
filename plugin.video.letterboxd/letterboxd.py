@@ -12,7 +12,7 @@ URL_MAIN            = 'http://www.letterboxd.com'
 URL_PAGE            = '/page/%s'
 
 URL_USER            = URL_MAIN + '/%s'
-URL_USER_DIARY      = URL_USER + '/films/diary'
+URL_USER_DIARY      = URL_USER + '/films/diary' + URL_PAGE
 URL_USER_WATCHLIST  = URL_USER + '/watchlist' + URL_PAGE
 URL_USER_LISTS      = URL_USER + '/lists' + URL_PAGE
 URL_USER_LIST       = URL_USER + '/list/%s' + URL_PAGE
@@ -23,13 +23,27 @@ URL_FILMS           = URL_MAIN + '/films'
 URL_FILMS_GENRE     = URL_FILMS + '/%s'
 
 
+# ============= Profile ======================================================================
+
+# Get profile
+def get_profile(username):    
+    # Profile
+    data = _getData((URL_USER) % (username))[0]
+    
+    stats = data.find('ul', {'class':'stats'}).findAll('strong')
+    stats = {'film': stats[0].text, 'this_year': stats[1].text, 'lists': stats[2].text, 'following': stats[3].text, 'followers': stats[4].text}
+    
+    # Return
+    return stats
+
+
 # ============= Diary ========================================================================
 
 # Get diary
 def get_diary(username, page):
     # Films
     films = []
-    data, next_page = _getData((URL_USER_DIARY + URL_PAGE) % (username, page))
+    data, next_page = _getData((URL_USER_DIARY) % (username, page))
     
     if data:    
         if not data.find('h2', {'class':'ui-block-heading'}):
