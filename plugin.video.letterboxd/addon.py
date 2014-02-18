@@ -1,5 +1,5 @@
 # Imports
-from xbmcswift2 import Plugin
+from xbmcswift2 import xbmc, xbmcgui, Plugin
 
 import context_menus
 import letterboxd
@@ -29,7 +29,12 @@ def index(username=plugin.get_setting('username')):
         {'label': 'Watchlist', 'path': plugin.url_for('list', username=username, slug='watchlist', page='1')},
         {'label': 'Lists (%s lists)' % (profile['lists']), 'path': plugin.url_for('lists', username=username, page='1')},
         {'label': 'Network', 'path': plugin.url_for('network', username=username, following=profile['following'], followers=profile['followers'])},
+        #{'label': 'Test', 'path': plugin.url_for('test')},
+        
     ]
+    for item in items:
+        item['context_menu'] = context_menus.list()
+        item['replace_context_menu'] = True
     
     # Discover
     if username == plugin.get_setting('username'):
@@ -37,7 +42,7 @@ def index(username=plugin.get_setting('username')):
     
     # Return
     return items
-
+    
     
 # ============= Diary ========================================================================
 
@@ -108,7 +113,10 @@ def list(username, slug, page):
         'icon': film['poster'],
         'thumbnail': film['poster'],
         'label': label_ranked % (film['pos'], film['title'], film['year']) if film['pos'] else label % (film['title'], film['year']),
-        'info': {'genre': 'test, foo, bar'},
+        'info': {
+            'genre': 'test, foo, bar',
+            'playcount': 1 if film['watched'] else 0
+        },
         'context_menu': context_menus.film(film['title']),
         'replace_context_menu': True,
         'path': plugin.url_for('index')

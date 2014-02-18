@@ -107,10 +107,11 @@ def get_list(username, slug, page):
         data = data.findAll('li', {'class':re.compile(r'\poster-container\b')})
                 
         films = [{
-            'title':re.sub(r'\((.+)\)', ' ', _getText(film, tag='a', cls={'class':'frame'}, attr='title')).strip(),
-            'year':_getText(film, tag='a', cls={'class':'frame'}, attr='title', match=r'\(([0-9]{4})\)'),
-            'poster':_getText(film, tag='img', attr='src'),
-            'pos':_getText(film, tag='p', cls={'class':'list-number'})
+            'title': re.sub(r'\((.+)\)', ' ', _getText(film, tag='a', cls={'class':'frame'}, attr='title')).strip(),
+            'year': _getText(film, tag='a', cls={'class':'frame'}, attr='title', match=r'\(([0-9]{4})\)'),
+            'poster': _getText(film, tag='img', attr='src'),
+            'pos': _getText(film, tag='p', cls={'class':'list-number'}),
+            'watched': True if film.find('span', {'class':re.compile(r'\icon-watched\b')}) else False
         } for film in data]
     
     # Return
