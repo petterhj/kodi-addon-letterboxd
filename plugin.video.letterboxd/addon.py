@@ -23,14 +23,14 @@ def index(username=plugin.get_setting('username')):
         username = plugin.get_setting('username')
     
     # Profile
-    profile = letterboxd.get_profile(username)
+    name, stats = letterboxd.get_profile(username)
     
     # Items
     items = [
-        {'label': 'Diary', 'context_menu': context_menus.list(), 'path': plugin.url_for('diary', username=username, page='1')},
-        {'label': 'Watchlist', 'path': plugin.url_for('list', username=username, slug='watchlist', page='1')},
-        {'label': 'Lists (%s lists)' % (profile['lists']), 'path': plugin.url_for('lists', username=username, page='1')},
-        {'label': 'Network', 'path': plugin.url_for('network', username=username, following=profile['following'], followers=profile['followers'])},
+        {'label': name + '\'s Diary', 'context_menu': context_menus.list(), 'path': plugin.url_for('diary', username=username, page='1')},
+        {'label': name + '\'s Watchlist', 'path': plugin.url_for('list', username=username, slug='watchlist', page='1')},
+        {'label': name + '\'s Lists (%s lists)' % (stats['lists']), 'path': plugin.url_for('lists', username=username, page='1')},
+        {'label': name + '\'s Network', 'path': plugin.url_for('network', username=username, following=stats['following'], followers=stats['followers'])},
         #{'label': 'Test', 'path': plugin.url_for('test')},
         
     ]

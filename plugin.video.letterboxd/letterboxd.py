@@ -30,11 +30,14 @@ def get_profile(username):
     # Profile
     data = _getData((URL_USER) % (username))[0]
     
+    name = data.find('div', {'class':'profile-name-wrap'})
+    name = name.find('h1').text
+    
     stats = data.find('ul', {'class':'stats'}).findAll('strong')
     stats = {'film': stats[0].text, 'this_year': stats[1].text, 'lists': stats[2].text, 'following': stats[3].text, 'followers': stats[4].text}
     
     # Return
-    return stats
+    return name, stats
 
 
 # ============= Diary ========================================================================
