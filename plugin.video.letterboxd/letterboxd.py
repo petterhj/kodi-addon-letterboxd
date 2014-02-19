@@ -20,7 +20,7 @@ URL_USER_FOLLOWING  = URL_USER + '/following' + URL_PAGE
 URL_USER_FOLLOWERS  = URL_USER + '/followers' + URL_PAGE
 
 URL_FILMS           = URL_MAIN + '/films'
-URL_FILMS_GENRE     = URL_FILMS + '/%s'
+URL_FILMS_PARAMS    = URL_FILMS + '/ajax/%s' + URL_PAGE    
 
 
 # ============= Profile ======================================================================
@@ -54,21 +54,21 @@ def get_diary(username, page):
             for film in data:
                 title = film.find('span', {'class':'frame-title'}).text
                 year = film.find('td', {'class':'td-released center'}).text
-                watched = film.find('td', {'class':'td-day diary-day center'})
-                watched = '.'.join(reversed(watched.find('a')['href'].split('/')[-4:-1]))
+                date = film.find('td', {'class':'td-day diary-day center'})
+                date = '.'.join(reversed(date.find('a')['href'].split('/')[-4:-1]))
                 rating = (int(film.find('meta', {'itemprop':'rating'})['content']) / 2)
                 liked = True if film.find('span', {'class':'has-icon icon-16 large-liked icon-liked'}) else False
                 rewatch = False if film.find('td', {'class':'td-rewatch center icon-status-off'}) else True
                 poster = film.find('img')['src']
             
                 films.append({
-                    'title':title, 
-                    'year':year, 
-                    'watched':watched, 
-                    'rating':rating, 
-                    'liked':liked, 
-                    'rewatch':rewatch,
-                    'poster':poster
+                    'title': title, 
+                    'year': year, 
+                    'date': date, 
+                    'rating': rating, 
+                    'liked': liked, 
+                    'rewatch': rewatch,
+                    'poster': poster
                 })
 
     # Return
@@ -87,9 +87,9 @@ def get_lists(username, page):
         data = data.findAll('div', {'class':'film-list-summary'})
     
         lists = [{
-            'title':_getText(list, tag='h2'),
-            'count':_getText(list, tag='small', split=True, delimeter='&'),
-            'slug':_getText(list, tag='a', attr='href', split=True, delimeter='/', index=-2)
+            'title': _getText(list, tag='h2'),
+            'count': _getText(list, tag='small', split=True, delimeter='&'),
+            'slug': _getText(list, tag='a', attr='href', split=True, delimeter='/', index=-2)
         } for list in data]
     
     # Return
@@ -121,20 +121,26 @@ def get_list(username, slug, page):
 # ============= Films ========================================================================
 
 # Get film
-def get_films(genre, page):
+def get_films(url, page):
     # Films
     films = []
-    data, next_page = _getData((URL_FILMS_GENRE) % (slug))
-
-    if data:
-        data = data.findAll('li', {'class':re.compile(r'\poster-container\b')})
     
+    data, next_page = _getData((URL_FILMS_PARAMS) % (url.replace('_', '/'), page))
+    
+    print (URL_FILMS_PARAMS) % (url.replace('_', '/'), page)
+    
+    if data:
+        print data
+        data = data.findAll('li', {'class': 'poster-container'})
+        
         films = [{
             'title':re.sub(r'\((.+)\)', ' ', film.find('a', {'class':'frame'})['title']).strip(),
             'year':re.search(r'\(([0-9]{4})\)', film.find('a', {'class':'frame'})['title']).group(1),
             'poster':_getText(film, tag='img', attr='src'),
             'pos':_getText(film, tag='p', cls={'class':'list-number'})
         } for film in data]
+        
+        print films
     
     # Return
     return films, next_page

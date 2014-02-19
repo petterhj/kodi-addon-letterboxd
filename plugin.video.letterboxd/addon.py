@@ -1,4 +1,6 @@
 # Imports
+from datetime import date
+
 from xbmcswift2 import xbmc, xbmcgui, Plugin
 
 import context_menus
@@ -60,7 +62,7 @@ def diary(username, page):
         'thumbnail':film['poster'],
         'label':'%s (%s)' % (film['title'], film['year']),
         'info': {
-            'genre': 'Watched: %s | Rating: %s | Liked: %s | Rewatch: %s' % (film['watched'], film['rating'], film['liked'], film['rewatch']),
+            'genre': 'Date: %s | Rating: %s | Liked: %s | Rewatch: %s' % (film['date'], film['rating'], film['liked'], film['rewatch']),
             'rating': (float(film['rating']) * 2)
         },
         'context_menu': context_menus.film(film['title']),
@@ -84,10 +86,10 @@ def lists(username, page):
     lists, next_page = letterboxd.get_lists(username, page)
     
     items = [{
-        'icon':'',
-        'thumbnail':'',
-        'label':'%s (%s)' % (list['title'], list['count']),
-        'path':plugin.url_for('list', username=username, slug=list['slug'], page=1)
+        'icon': '',
+        'thumbnail': '',
+        'label': '%s (%s)' % (list['title'], list['count']),
+        'path': plugin.url_for('list', username=username, slug=list['slug'], page=1)
     } for list in lists]
     
     # Pagination
@@ -164,17 +166,15 @@ def people(username, type, page):
     return items
 
 
-# ============= Discover =====================================================================
+# ============= Films =====================================================================
 
 # Discover
 @plugin.route('/discover')
 def discover():
     # Items
     items = [
-        {'label': 'Films by year', 'path': plugin.url_for('index')},
-        {'label': 'Films by genre', 'path': plugin.url_for('genres')},  
-        {'label': 'Films by popularity', 'path': plugin.url_for('index')},
-        {'label': 'Films by rating', 'path': plugin.url_for('index')},  
+        {'label': 'Films by popularity', 'path': plugin.url_for('filter')},
+        {'label': 'Films by rating', 'path': plugin.url_for('filter')},  
         {'label': 'Popular with friends', 'path': plugin.url_for('index')},  
         {'label': 'Just reviewed', 'path': plugin.url_for('index')},
         {'label': 'Popular reviews this week', 'path': plugin.url_for('index')},
@@ -185,7 +185,42 @@ def discover():
     # Return
     return items
 
-#
+
+# Filter
+@plugin.route('/filter')
+def filter():
+    # Items
+    items = [
+        {'label': 'By genre', 'path': plugin.url_for('index')},
+        {'label': 'By decade', 'path': plugin.url_for('index')},
+        {'label': 'By year', 'path': plugin.url_for('years')},
+    ] 
+    
+    # Return
+    return items
+
+
+# Year
+@plugin.route('/years')
+def years():
+    # Return
+    return [{
+        'label': '%s' % (year), 
+        'path': plugin.url_for('index')
+    } for year in reversed(range(1880, (date.today().year+1)))]
+    
+    
+# Decade
+@plugin.route('/decades')
+def decades():
+    # Return
+    return [{
+        'label': '%s' % (decade),
+        'path': plugin.url_for('index')
+    } for decade in reversed(range(1880, (date.today().year+1))[0::10])]
+    
+    
+# Genres
 @plugin.route('/genres')
 def genres():
     # Genres
@@ -196,11 +231,38 @@ def genres():
     ]
     
     # Items
-    #'path':plugin.url_for('genre', slug=genre.replace(' ', '-').lower())
-    items = [{'label':'%s' % (genre), 'path':plugin.url_for('index')} for genre in genres]
+    items = [{'label':'%s' % (genre), 'path':plugin.url_for('films', url='genre_' + genre.lower().replace(' ', '-'), page=1)} for genre in genres]
 
     # Return
     return items
+	
+
+# Films
+@plugin.route('/films/<url>/<page>')
+def films(url, page):
+    # Content type
+    plugin.set_content('movies')
+    
+    # Items
+    films, next_page = letterboxd.get_films(url, page)
+    
+    items = [{
+        'icon': film['poster'],
+        'thumbnail': film['poster'],
+        'label': '%s (%s)' % (film['title'], film['year']),
+        'info': {
+            'genre': 'test, foo, bar'
+        },
+        'context_menu': context_menus.film(film['title']),
+        'replace_context_menu': True,
+        'path': plugin.url_for('index')
+    } for film in films]
+    
+    # Pagination
+    items = _pagination(items, page, next_page, route='films', options={'url':url})
+    
+    # Return
+    return plugin.finish(items, update_listing=True)
     
 
 # ============= Main =========================================================================

@@ -1,6 +1,47 @@
 # Imports
 import letterboxd
+import requests
 
+
+#id=username
+#id=password
+
+#response = requests.post('http://letterboxd.com/user/login.do', data={'username': 'petterhj', 'password': 'fjxa694p'})
+
+#print response.text
+
+import mechanize
+
+br = mechanize.Browser()
+br.open('http://www.letterboxd.com')
+print br.title()
+#print br.select_form(predicate=lambda f: 'id' in f.attrs and f.attrs['id'] == 'signin')
+#print br.select_form(nr=1)
+#br['username'] = 'petterhj'
+#br['password'] = 'fjxa694p'
+#response = br.submit()
+#print br.title()
+#print response
+
+br.form = list(br.forms())[0] 
+br['username'] = 'petterhj'
+br['password'] = 'fjxa694p'
+response = br.submit()
+
+print response.read()
+
+'''
+form = [f for f in br.forms()][0]
+form['username'] = 'petterhj'
+form['password'] = 'fjxa694p'
+response = form.click()
+br.open(response)
+print br.title()
+print br.read()
+#print br.submit()
+'''
+
+'''
 def run_films():
     genres = [
         {'genre':'action', 'page':'1'},
@@ -49,3 +90,4 @@ def run_lists():
 #run_films()
 
 print letterboxd.get_list('petterhj', 'collection', '2')
+'''
