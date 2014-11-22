@@ -2,7 +2,7 @@ Letterboxd addon for XBMC
 ======================
 Under development.
 
-![letterboxd](https://raw2.github.com/petterhj/xbmc-addon-letterboxd/master/plugin.video.letterboxd/icon.png)
+![letterboxd](https://raw.githubusercontent.com/petterhj/xbmc-addon-letterboxd/master/plugin.video.letterboxd/icon.png)
 
 Currently possible to browse watchlist, diary, lists and network. No additional functionality.
 
