@@ -5,7 +5,11 @@ from xbmcswift2 import xbmc, xbmcgui, Plugin
 
 import context_menus
 import letterboxd
+import database
 
+
+# Database
+database = Database()
 
 # Plugin
 plugin = Plugin()
@@ -24,22 +28,25 @@ def index(username=plugin.get_setting('username')):
     
     # Profile
     name, stats = letterboxd.get_profile(username)
+    current = True if username == plugin.get_setting('username') else False
     
     # Items
     items = [
-        {'label': name + '\'s Diary', 'context_menu': context_menus.list(), 'path': plugin.url_for('diary', username=username, page='1')},
-        {'label': name + '\'s Watchlist', 'path': plugin.url_for('list', username=username, slug='watchlist', page='1')},
-        {'label': name + '\'s Lists (%s lists)' % (stats['lists']), 'path': plugin.url_for('lists', username=username, page='1')},
-        {'label': name + '\'s Network', 'path': plugin.url_for('network', username=username, following=stats['following'], followers=stats['followers'])},
-        #{'label': 'Test', 'path': plugin.url_for('test')},
-        
+        {'label': 'Diary', 'context_menu': context_menus.list(), 'path': plugin.url_for('diary', username=username, page='1')},
+        {'label': 'Watchlist', 'path': plugin.url_for('list', username=username, slug='watchlist', page='1')},
+        {'label': 'Lists (%s lists)' % (stats['lists']), 'path': plugin.url_for('lists', username=username, page='1')},
+        {'label': 'Network', 'path': plugin.url_for('network', username=username, following=stats['following'], followers=stats['followers'])},
+        #{'label': 'Test', 'path': plugin.url_for('test')},    
     ]
+
     for item in items:
         item['context_menu'] = context_menus.list()
         item['replace_context_menu'] = True
+
+        item['label'] = name + '\'s ' + item['label'] if not current else item['label']
     
     # Discover
-    if username == plugin.get_setting('username'):
+    if current:
         items.append({'label': 'Discover', 'path': plugin.url_for('discover')})
     
     # Return
@@ -263,9 +270,7 @@ def films(url, page):
     
     # Return
     return plugin.finish(items, update_listing=True)
-    
 
-# ============= Main =========================================================================
 
 # Pagination
 def _pagination(items, page, next_page, route, options):
@@ -289,6 +294,8 @@ def _pagination(items, page, next_page, route, options):
     # Return
     return items
     
+    
+# ============= Main =========================================================================
 
 # Main
 if __name__ == '__main__':

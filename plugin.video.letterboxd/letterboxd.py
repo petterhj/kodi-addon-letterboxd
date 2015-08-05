@@ -22,6 +22,8 @@ URL_USER_FOLLOWERS  = URL_USER + '/followers' + URL_PAGE
 URL_FILMS           = URL_MAIN + '/films'
 URL_FILMS_PARAMS    = URL_FILMS + '/ajax/%s' + URL_PAGE    
 
+URL_META_POSTER     = URL_MAIN + '/film/%s/image-150/'
+
 
 # ============= Profile ======================================================================
 
@@ -34,7 +36,14 @@ def get_profile(username):
     name = name.find('h1').text
     
     stats = data.find('ul', {'class':'stats'}).findAll('strong')
-    stats = {'film': stats[0].text, 'this_year': stats[1].text, 'lists': stats[2].text, 'following': stats[3].text, 'followers': stats[4].text}
+    stats = [stat.text.replace(',', '') for stat in stats]
+    stats = {
+        'films': stats[0], 
+        'this_year': stats[1], 
+        'lists': stats[2], 
+        'following': stats[3], 
+        'followers': stats[4]
+    }
     
     # Return
     return name, stats
@@ -43,36 +52,36 @@ def get_profile(username):
 # ============= Diary ========================================================================
 
 # Get diary
-def get_diary(username, page):
+def get_diary(username, page=1):
     # Films
     films = []
     data, next_page = _getData((URL_USER_DIARY) % (username, page))
     
-    if data:    
-        if not data.find('h2', {'class':'ui-block-heading'}):
-            data = data.find('table', {'id':'diary-table'})
-            data = data.find('tbody')
-            data = data.findAll('tr')
-        
-            for film in data:
-                title = film.find('span', {'class':'frame-title'}).text
-                year = film.find('td', {'class':'td-released center'}).text
-                date = film.find('td', {'class':'td-day diary-day center'})
-                date = '.'.join(reversed(date.find('a')['href'].split('/')[-4:-1]))
-                rating = (int(film.find('meta', {'itemprop':'rating'})['content']) / 2)
-                liked = True if film.find('span', {'class':'has-icon icon-16 large-liked icon-liked'}) else False
-                rewatch = False if film.find('td', {'class':'td-rewatch center icon-status-off'}) else True
-                poster = film.find('img')['src']
-            
-                films.append({
-                    'title': title, 
-                    'year': year, 
-                    'date': date, 
-                    'rating': rating, 
-                    'liked': liked, 
-                    'rewatch': rewatch,
-                    'poster': poster
-                })
+    if data:
+        data = data.find('table', {'id':'diary-table'})
+        data = data.findAll('tr', {'class': 'diary-entry-row'})
+
+        for film in data:
+            slug    = film.find('h3', {'class':'film-title prettify'}).find('a')['href'].split('/')[-2]
+            title   = film.find('h3', {'class':'film-title prettify'}).text
+            year    = film.find('td', {'class':'td-released center'}).text
+            date    = film.find('td', {'class':'td-day diary-day center'})
+            date    = '.'.join(reversed(date.find('a')['href'].split('/')[-4:-1]))
+            rating  = (int(film.find('meta', {'itemprop':'rating'})['content']) / 2)
+            liked   = True if film.find('span', {'class':'has-icon icon-16 large-liked icon-liked'}) else False
+            rewatch = False if film.find('td', {'class':'td-rewatch center icon-status-off'}) else True
+            poster  = _get_poster(slug)
+
+            films.append({
+                'slug': slug,
+                'title': title, 
+                'year': year, 
+                'date': date,
+                'rating': rating, 
+                'liked': liked, 
+                'rewatch': rewatch,
+                'poster': poster
+            })
 
     # Return
     return films, next_page
@@ -81,7 +90,7 @@ def get_diary(username, page):
 # ============= Lists ========================================================================
     
 # Get lists
-def get_lists(username, page):
+def get_lists(username, page=1):
     # Lists
     lists = []
     data, next_page = _getData((URL_USER_LISTS) % (username, page))
@@ -90,10 +99,10 @@ def get_lists(username, page):
         data = data.findAll('div', {'class':'film-list-summary'})
     
         lists = [{
-            'title': _getText(list, tag='h2'),
-            'count': _getText(list, tag='small', split=True, delimeter='&'),
-            'slug': _getText(list, tag='a', attr='href', split=True, delimeter='/', index=-2)
-        } for list in data]
+            'title': _getText(l, tag='h2'),
+            'count': _getText(l, tag='small', split=True, delimeter='&'),
+            'slug': _getText(l, tag='a', attr='href', split=True, delimeter='/', index=-2)
+        } for l in data]
     
     # Return
     return lists, next_page
@@ -182,10 +191,12 @@ def get_people(username, type, page):
 # Get page data
 def _getData(url):
     try:
-        data = soup(download_page(url), convertEntities=soup.HTML_ENTITIES)
-    except:
+        data = download_page(url)
+        data = data.decode('utf-8')
+        data = soup(data)
+    except Exception as e:
+        print '[Letterboxd][_getData] %s' % (e)
         return None, None
-        raise
     else:
         return data, _getNextPage(data)
         
@@ -200,18 +211,28 @@ def _getNextPage(soup):
         return None
     
 
+# Get poster
+def _get_poster(slug):
+    try:
+        data = _getData(URL_META_POSTER % (slug))
+        poster = data[0].find('img')['srcset'].split(' ')[0]
+    except Exception as e:
+        print '[Letterboxd][_get_poster] %s' % (e)
+        return None
+    else:
+        return poster
+        
+
 # Find tag
 def _getText(soup, tag, cls={}, attr=None, split=False, delimeter='', index=0, match=None):
     tag = soup.find(tag, cls)
     
     if tag:
-        if attr:
-            text = tag[attr]
-        else:
-            text = tag.text
+        text = tag[attr] if attr else tag.text
             
         # Split
         if split:
+            print text, '=>',
             text = text.split(delimeter)[index]
             print text
             

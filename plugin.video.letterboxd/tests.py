@@ -1,93 +1,38 @@
-# Imports
-import letterboxd
-import requests
+# # Imports
+# import letterboxd as lb
+
+# print '='*20
+
+# for film in lb.get_diary('petterhj')[0]:
+#    print film
+
+# # print lb.get_profile('petterhj')
+# # print lb._get_poster('the-guest-2014')
+
+# print '='*20
+
+# import resources.models.film
+
+from xbmcswift2 import xbmc, xbmcgui, Plugin
+
+xbmc.executebuiltin("Notification('Title','Message')")
+
+plugin = Plugin()
+
+films = plugin.get_storage('films')
+
+def test():
+	print 'test ran'
+	return '2014'
 
 
-#id=username
-#id=password
+# f1 = {'slug': 'hateship-loveship', 'title': 'Hateship, loveship', 'year': test()}
+# f2 = {'slug': 'the-matrix', 'title': 'The Matrix', 'year': '1999'}
 
-#response = requests.post('http://letterboxd.com/user/login.do', data={'username': 'petterhj', 'password': 'fjxa694p'})
+# films[f1['slug']] = f1
 
-#print response.text
+# print films['hateship-loveship']
 
-import mechanize
+# films.sync()
 
-br = mechanize.Browser()
-br.open('http://www.letterboxd.com')
-print br.title()
-#print br.select_form(predicate=lambda f: 'id' in f.attrs and f.attrs['id'] == 'signin')
-#print br.select_form(nr=1)
-#br['username'] = 'petterhj'
-#br['password'] = 'fjxa694p'
-#response = br.submit()
-#print br.title()
-#print response
-
-br.form = list(br.forms())[0] 
-br['username'] = 'petterhj'
-br['password'] = 'fjxa694p'
-response = br.submit()
-
-print response.read()
-
-'''
-form = [f for f in br.forms()][0]
-form['username'] = 'petterhj'
-form['password'] = 'fjxa694p'
-response = form.click()
-br.open(response)
-print br.title()
-print br.read()
-#print br.submit()
-'''
-
-'''
-def run_films():
-    genres = [
-        {'genre':'action', 'page':'1'},
-        #{'username':'petterhj', 'slug':'get-julekalender-2013', 'page':'1'}
-    ]
-    
-    for genre in genres:
-        print '='*50
-        for film in letterboxd.get_films(**diary):
-            for key in film:
-                print film[key], '|',
-            print
-            
-
-def run_diaries():
-    diaries = [
-        {'username':'petterhj', 'page':'1'},
-        #{'username':'petterhj', 'slug':'get-julekalender-2013', 'page':'1'}
-    ]
-    
-    for diary in diaries:
-        print '='*50
-        for film in letterboxd.get_diary(**diary):
-            for key in film:
-                print film[key], '|',
-            print
-
-def run_lists():
-    lists = [
-        {'username':'petterhj', 'slug':'watchlist', 'page':'1'},
-        {'username':'petterhj', 'slug':'get-julekalender-2013', 'page':'1'}
-    ]
-
-    for list in lists:
-        print '='*50
-        for film in letterboxd.get_list(**list):
-            for key in film:
-                print film[key], '|',
-            print
-
-
-
-            
-# Tests
-#run_lists()
-#run_films()
-
-print letterboxd.get_list('petterhj', 'collection', '2')
-'''
+print films.items()
